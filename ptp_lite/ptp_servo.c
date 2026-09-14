@@ -1,6 +1,6 @@
 /**
  * @file ptp_servo.c
- * @brief PI伺服控制器实现
+ * @brief PI servo controller implementation
  */
 
 #include <stdlib.h>
@@ -21,14 +21,14 @@ double pi_servo_sample(pi_servo_t *s, int64_t offset, servo_state_t *state)
 {
     double freq_adj;
     
-    /* 状态转换逻辑 */
+    /* State transition logic */
     if (llabs(offset) > SERVO_STEP_THRESHOLD) {
-        /* 大偏差：跳变 */
+        /* Large offset: jump */
         s->state = SERVO_JUMP;
         s->integral = 0;
         s->count = 0;
     } else {
-        /* 小偏差：渐进调整 */
+        /* Small offset: gradual adjustment */
         s->count++;
         if (s->count > 1) {
             s->state = SERVO_LOCKED;
@@ -38,7 +38,7 @@ double pi_servo_sample(pi_servo_t *s, int64_t offset, servo_state_t *state)
         }
     }
     
-    /* PI控制 - 只在LOCKED状态使用 */
+    /* PI control - only used in LOCKED states */
     if (s->state == SERVO_LOCKED || s->state == SERVO_LOCKED_STABLE) {
         s->integral += offset;
         freq_adj = -s->kp * offset - s->ki * s->integral;

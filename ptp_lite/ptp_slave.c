@@ -1,6 +1,6 @@
 /**
  * @file ptp_slave.c
- * @brief PTP从时钟程序 - 双socket实现（符合IEEE 1588标准）
+ * @brief PTP slave clock program - dual-socket implementation (IEEE 1588 compliant)
  */
 
 #include <stdio.h>
@@ -108,11 +108,11 @@ static void adjust_clock(int64_t offset_ns, double freq_ppb, servo_state_t state
     
     switch (state) {
     case SERVO_JUMP:
-        /* 使用clock_settime直接设置时间（更可靠） */
+        /* Use clock_settime to set the time directly (more reliable) */
         clock_gettime(CLOCK_REALTIME, &ts);
         
         if (offset_ns < 0) {
-            /* 从时钟落后，需要向前调整 */
+            /* Slave is behind; move the clock forward */
             ts.tv_sec += (-offset_ns) / 1000000000LL;
             ts.tv_nsec += (-offset_ns) % 1000000000LL;
             if (ts.tv_nsec >= 1000000000LL) {
@@ -120,7 +120,7 @@ static void adjust_clock(int64_t offset_ns, double freq_ppb, servo_state_t state
                 ts.tv_nsec -= 1000000000LL;
             }
         } else {
-            /* 从时钟超前，需要向后调整 */
+            /* Slave is ahead; move the clock backward */
             ts.tv_sec -= offset_ns / 1000000000LL;
             ts.tv_nsec -= offset_ns % 1000000000LL;
             if (ts.tv_nsec < 0) {
@@ -202,7 +202,7 @@ static void handle_delay_resp(ptp_delay_resp_msg_t *msg)
     printf("Delay_Resp: t3=%ld.%09ld t4=%ld.%09ld delay=%ld ns offset=%ld ns\n",
            t3.tv_sec, t3.tv_nsec, t4.tv_sec, t4.tv_nsec, delay, offset);
     
-    /* 使用精确offset调整时钟 */
+    /* Use the precise offset to adjust the clock */
     freq = pi_servo_sample(&servo, offset, &state);
     adjust_clock(offset, freq, state);
 }
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
     init_port_id();
     pi_servo_init(&servo);
     
-    /* 创建两个socket：一个监听319，一个监听320 */
+    /* Create two sockets: one listening on 319, one on 320 */
     event_fd = create_socket(argv[1], PTP_EVENT_PORT);
     if (event_fd < 0) {
         fprintf(stderr, "Failed to create event socket\n");
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
         ret = select(max_fd + 1, &readfds, NULL, NULL, &timeout);
         
         if (ret > 0) {
-            /* 处理event端口（319）的消息 */
+            /* Handle event-port (319) messages */
             if (FD_ISSET(event_fd, &readfds)) {
                 addr_len = sizeof(client_addr);
                 ret = recvfrom(event_fd, recv_buf, sizeof(recv_buf), 0,
@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
                 }
             }
             
-            /* 处理general端口（320）的消息 */
+            /* Handle general-port (320) messages */
             if (FD_ISSET(general_fd, &readfds)) {
                 addr_len = sizeof(client_addr);
                 ret = recvfrom(general_fd, recv_buf, sizeof(recv_buf), 0,

@@ -1,6 +1,6 @@
 /**
  * @file ptp_master.c
- * @brief PTP主时钟程序
+ * @brief PTP master clock program
  */
 
 #include <stdio.h>

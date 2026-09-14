@@ -1,27 +1,27 @@
-# ==================== 编译器配置 ====================
+# ==================== compiler configuration ====================
 
-# x86编译器（默认）
+# x86 compiler (default)
 CC = gcc
 
-# ARM架构编译器
+# ARM compilers
 CC_ARM64 = aarch64-linux-gnu-gcc
 CC_ARM32 = arm-linux-gnueabihf-gcc
 
-# ==================== 编译选项 ====================
+# ==================== build options ====================
 
-# x86编译选项
+# x86 build options
 CFLAGS = -Wall -Wextra -O2 -std=gnu11
 LDFLAGS = -lrt -lm
 
-# ARM64编译选项
+# ARM64 build options
 CFLAGS_ARM64 = -Wall -Wextra -O2 -std=gnu11
 LDFLAGS_ARM64 = -lrt -lm
 
-# ARM32编译选项
+# ARM32 build options
 CFLAGS_ARM32 = -Wall -Wextra -O2 -std=gnu11
 LDFLAGS_ARM32 = -lrt -lm
 
-# ==================== x86编译目标（默认） ====================
+# ==================== x86 targets (default) ====================
 
 all: ptp_master ptp_slave
 
@@ -31,7 +31,7 @@ ptp_master: ptp_master.c ptp_message.c ptp_servo.c
 ptp_slave: ptp_slave.c ptp_message.c ptp_servo.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# ==================== ARM64编译目标 ====================
+# ==================== ARM64 targets ====================
 
 arm64: ptp_master_arm64 ptp_slave_arm64
 
@@ -41,7 +41,7 @@ ptp_master_arm64: ptp_master.c ptp_message.c ptp_servo.c
 ptp_slave_arm64: ptp_slave.c ptp_message.c ptp_servo.c
 	$(CC_ARM64) $(CFLAGS_ARM64) -o $@ $^ $(LDFLAGS_ARM64)
 
-# ==================== ARM32编译目标 ====================
+# ==================== ARM32 targets ====================
 
 arm32: ptp_master_arm32 ptp_slave_arm32
 
@@ -51,7 +51,7 @@ ptp_master_arm32: ptp_master.c ptp_message.c ptp_servo.c
 ptp_slave_arm32: ptp_slave.c ptp_message.c ptp_servo.c
 	$(CC_ARM32) $(CFLAGS_ARM32) -o $@ $^ $(LDFLAGS_ARM32)
 
-# ==================== 清理目标 ====================
+# ==================== clean targets ====================
 
 clean:
 	rm -f ptp_master ptp_slave *.o
@@ -64,23 +64,23 @@ clean-arm32:
 
 clean-all: clean clean-arm64 clean-arm32
 
-# ==================== 辅助目标 ====================
+# ==================== auxiliary targets ====================
 
-# 编译所有架构版本
+# build all architectures
 all-arch: all arm64 arm32
 
-# 显示帮助信息
+# show help
 help:
-	@echo "PTP-lite 编译选项:"
-	@echo "  make           - 编译x86版本（默认）"
-	@echo "  make arm64     - 编译ARM64版本"
-	@echo "  make arm32     - 编译ARM32版本"
-	@echo "  make all-arch  - 编译所有架构版本"
+	@echo "PTP-lite build options:"
+	@echo "  make           - build the x86 version (default)"
+	@echo "  make arm64     - build the ARM64 version"
+	@echo "  make arm32     - build the ARM32 version"
+	@echo "  make all-arch  - build all architecture versions"
 	@echo ""
-	@echo "清理选项:"
-	@echo "  make clean         - 清理x86版本"
-	@echo "  make clean-arm64   - 清理ARM64版本"
-	@echo "  make clean-arm32   - 清理ARM32版本"
-	@echo "  make clean-all     - 清理所有版本"
+	@echo "Clean options:"
+	@echo "  make clean         - clean the x86 version"
+	@echo "  make clean-arm64   - clean the ARM64 version"
+	@echo "  make clean-arm32   - clean the ARM32 version"
+	@echo "  make clean-all     - clean all versions"
 
 .PHONY: all arm64 arm32 clean clean-arm64 clean-arm32 clean-all all-arch help

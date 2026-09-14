@@ -1,6 +1,6 @@
 /**
  * @file ptp_message.c
- * @brief PTP消息编码实现 - IEEE 1588-2019
+ * @brief PTP message encoding implementation - IEEE 1588-2019
  */
 
 #include <string.h>

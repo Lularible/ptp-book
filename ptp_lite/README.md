@@ -1,280 +1,279 @@
-# PTP Lite - 轻量级PTP时间同步实现
+# PTP Lite - A Lightweight PTP Time Synchronization Implementation
 
-一个用于教学的轻量级PTP（Precision Time Protocol）实现，遵循IEEE 1588-2019标准。
+A lightweight PTP (Precision Time Protocol) implementation for teaching, following the IEEE 1588-2019 standard.
 
-## 项目特点
+## Features
 
-- **简洁易懂**：代码总量约1000行，注释详细
-- **完整功能**：实现完整的E2E同步流程
-- **易于学习**：适合理解PTP协议核心机制
-- **可实际运行**：真正能够同步时间
-- **无编译警告**：代码规范严格，适合教学
+- **Simple and clear**: ~1,000 lines of code in total, with detailed comments
+- **Complete functionality**: implements the full E2E synchronization flow
+- **Easy to learn**: ideal for understanding the core mechanisms of the PTP protocol
+- **Actually runs**: it really does synchronize time
+- **Warning-free build**: strict coding conventions, suitable for teaching
 
-## 技术选型
+## Technology choices
 
-- **延迟测量**：E2E（End-to-End）
-- **传输方式**：UDP/IPv4组播
-- **时间戳类型**：软件时间戳
-- **伺服算法**：PI控制器
+- **Delay measurement**: E2E (End-to-End)
+- **Transport**: UDP/IPv4 multicast
+- **Timestamp type**: software timestamps
+- **Servo algorithm**: PI controller
 
-## 快速开始
+## Quick start
 
-### 编译
+### Build
 
-#### x86架构（默认）
+#### x86 (default)
 
 ```bash
 make
 ```
 
-#### ARM64架构
+#### ARM64
 
 ```bash
 make arm64
 ```
 
-生成文件：`ptp_master_arm64`, `ptp_slave_arm64`
+Output: `ptp_master_arm64`, `ptp_slave_arm64`
 
-#### ARM32架构
+#### ARM32
 
 ```bash
 make arm32
 ```
 
-生成文件：`ptp_master_arm32`, `ptp_slave_arm32`
+Output: `ptp_master_arm32`, `ptp_slave_arm32`
 
-#### 编译所有架构
+#### All architectures
 
 ```bash
 make all-arch
 ```
 
-#### 查看帮助
+#### Help
 
 ```bash
 make help
 ```
 
-#### 交叉编译工具链安装
+#### Cross-compile toolchains
 
-**Ubuntu/Debian系统**：
+**Ubuntu/Debian**:
 ```bash
-# 安装ARM64工具链
+# install the ARM64 toolchain
 sudo apt install gcc-aarch64-linux-gnu
 
-# 安装ARM32工具链（硬浮点）
+# install the ARM32 toolchain (hard-float)
 sudo apt install gcc-arm-linux-gnueabihf
 ```
 
-**Fedora/CentOS系统**：
+**Fedora/CentOS**:
 ```bash
-# 安装ARM64工具链
+# install the ARM64 toolchain
 sudo yum install gcc-aarch64-linux-gnu
 
-# 安装ARM32工具链
+# install the ARM32 toolchain
 sudo yum install gcc-arm-linux-gnu
 ```
 
-#### 验证编译结果
+#### Verify the build
 
 ```bash
-# 查看编译后的程序架构信息
+# inspect the architecture of the built programs
 file ptp_master        # ELF 64-bit x86-64
 file ptp_master_arm64  # ELF 64-bit ARM aarch64
 file ptp_master_arm32  # ELF 32-bit ARM
 ```
 
-### 运行主时钟
+### Run the master clock
 
-在一台机器上运行：
+On one machine:
 
 ```bash
 sudo ./ptp_master eth0
 ```
 
-### 运行从时钟
+### Run the slave clock
 
-在另一台机器上运行：
+On another machine:
 
 ```bash
 sudo ./ptp_slave eth0
 ```
 
-### 验证同步效果
+### Verify synchronization
 
 ```bash
-# 在两台机器上分别查看时间
+# check the time on both machines
 date
 
-# 从时钟输出示例：
+# example slave output:
 # Sent Delay_Req seq=0 at 1234567890.123456789
 # Sync seq=0: t1=1234567890.123456789 t2=1234567890.123470000 offset=-12345 ns
 # FREQ ADJ: -12.34 ppb
 # Delay_Resp: t3=... t4=... delay=5678 ns corrected_offset=-12345 ns
 ```
 
-## 文件结构
+## File structure
 
 ```
 ptp_lite/
-├── README.md           # 项目说明
-├── Makefile            # 编译脚本
-├── ptp_common.h        # 公共定义和类型
-├── ptp_message.h       # 消息结构定义
-├── ptp_message.c       # 消息编码实现
-├── ptp_servo.h         # 伺服算法头文件
-├── ptp_servo.c         # 伺服算法实现
-├── ptp_master.c        # 主时钟程序
-├── ptp_slave.c         # 从时钟程序
-└── .gitignore          # Git忽略文件
+├── README.md           # project documentation
+├── Makefile            # build script
+├── ptp_common.h        # common definitions and types
+├── ptp_message.h       # message structure definitions
+├── ptp_message.c       # message encoding implementation
+├── ptp_servo.h         # servo algorithm header
+├── ptp_servo.c         # servo algorithm implementation
+├── ptp_master.c        # the master clock program
+├── ptp_slave.c         # the slave clock program
+└── .gitignore          # git ignore file
 ```
 
-## 实现的消息类型
+## Implemented message types
 
-- **Announce**：主时钟通告
-- **Sync + Follow_Up**：时间同步
-- **Delay_Req**：延迟请求
-- **Delay_Resp**：延迟响应
+- **Announce**: the master's advertisement
+- **Sync + Follow_Up**: time synchronization
+- **Delay_Req**: delay request
+- **Delay_Resp**: delay response
 
-## 同步原理
+## Synchronization principle
 
-### E2E延迟测量
-
-```
-主时钟                从时钟
-  |                     |
-  |-- Sync -----------> | (t2: 接收时间)
-  |                     |
-  |-- Follow_Up ------> | (携带t1)
-  |                     |
-  |                     |-- Delay_Req --> (t3: 发送时间)
-  |                     |
-  |<-- Delay_Req ------ | 
-  |                     |
-  |-- Delay_Resp -----> | (携带t4)
-  |                     |
-
-路径延迟 = [(t2-t1) + (t4-t3)] / 2
-
-真实偏差 = (t2-t1) - 路径延迟
-
-其中：
-- t1: Sync发送时间（主时钟）
-- t2: Sync接收时间（从时钟）
-- t3: Delay_Req发送时间（从时钟）
-- t4: Delay_Req接收时间（主时钟）
-```
-
-### PI控制器
-
-使用比例-积分控制器平滑调整时钟频率：
+### E2E delay measurement
 
 ```
-频率调整 = -Kp × offset - Ki × ∫offset dt
+Master clock             Slave clock
+  |                        |
+  |-- Sync --------------> | (t2: receive time)
+  |                        |
+  |-- Follow_Up --------> | (carries t1)
+  |                        |
+  |                        |-- Delay_Req --> (t3: send time)
+  |                        |
+  |<-- Delay_Req --------- |
+  |                        |
+  |-- Delay_Resp -------> | (carries t4)
+  |                        |
 
-参数：
-- Kp = 0.7（比例增益）
-- Ki = 0.3（积分增益）
+path delay = [(t2-t1) + (t4-t3)] / 2
+
+true offset = (t2-t1) - path delay
+
+where:
+- t1: Sync send time (master clock)
+- t2: Sync receive time (slave clock)
+- t3: Delay_Req send time (slave clock)
+- t4: Delay_Req receive time (master clock)
 ```
 
-## 配置参数
+### PI controller
 
-主要配置在 `ptp_common.h` 中定义：
+A proportional-integral controller smoothly disciplines the clock frequency:
+
+```
+frequency adjustment = -Kp × offset - Ki × ∫offset dt
+
+parameters:
+- Kp = 0.7 (proportional gain)
+- Ki = 0.3 (integral gain)
+```
+
+## Configuration parameters
+
+The main configuration is defined in `ptp_common.h`:
 
 ```c
-#define PTP_PRIMARY_MCAST      "224.0.1.129"  // 组播地址
-#define PTP_EVENT_PORT         319             // 事件端口
-#define PTP_GENERAL_PORT       320             // 普通端口
-#define PTP_DEFAULT_DOMAIN     0               // 默认域
-#define PTP_DEFAULT_PRIORITY1  128             // 优先级1
-#define PTP_DEFAULT_PRIORITY2  128             // 优先级2
+#define PTP_PRIMARY_MCAST      "224.0.1.129"  // multicast address
+#define PTP_EVENT_PORT         319             // event port
+#define PTP_GENERAL_PORT       320             // general port
+#define PTP_DEFAULT_DOMAIN     0               // default domain
+#define PTP_DEFAULT_PRIORITY1  128             // priority 1
+#define PTP_DEFAULT_PRIORITY2  128             // priority 2
 ```
 
-## 系统要求
+## System requirements
 
-- Linux操作系统
-- GCC编译器
-- root权限（调整系统时钟）
-- 两台机器在同一网络
+- Linux operating system
+- GCC compiler
+- root privileges (to adjust the system clock)
+- two machines on the same network
 
-## 防火墙配置
+## Firewall configuration
 
 ```bash
-# 允许PTP端口
+# allow the PTP ports
 sudo iptables -A INPUT -p udp --dport 319 -j ACCEPT
 sudo iptables -A INPUT -p udp --dport 320 -j ACCEPT
 ```
 
-## 精度说明
+## Accuracy notes
 
-由于使用软件时间戳，精度通常在：
+Because software timestamps are used, accuracy is typically:
 
-- 典型精度：±100 微秒
-- 最佳情况：±10 微秒
-- 受系统负载影响
+- Typical: ±100 microseconds
+- Best case: ±10 microseconds
+- Affected by system load
 
-如需更高精度，请使用支持硬件时间戳的网卡。
+For higher accuracy, use a NIC with hardware timestamp support.
 
-## 常见问题
+## FAQ
 
-### 1. 收不到消息
+### 1. No messages received
 
-检查防火墙和组播配置：
+Check the firewall and multicast configuration:
 
 ```bash
 ip maddr show eth0
 ```
 
-### 2. 时间不准
+### 2. Time is inaccurate
 
-确保系统时钟没有被NTP等其他服务干扰：
+Make sure the system clock isn't being disturbed by other services such as NTP:
 
 ```bash
 timedatectl set-ntp false
 ```
 
-### 3. 偏差很大
+### 3. Offset is large
 
-软件时间戳精度有限，可尝试：
-- 减少系统负载
-- 使用实时内核
-- 升级到硬件时间戳
+Software timestamps have limited accuracy; try:
+- reducing system load
+- using a real-time kernel
+- upgrading to hardware timestamps
 
-## 学习路径
+## Learning path
 
-推荐学习顺序：
+Recommended reading order:
 
-1. 阅读 README 了解项目概况
-2. 研究 ptp_common.h 理解基础数据类型
-3. 分析 ptp_message.c 学习消息编码
-4. 运行主时钟程序观察消息发送
-5. 运行从时钟程序理解同步流程
-6. 修改参数进行实验
+1. Read the README for a project overview.
+2. Study `ptp_common.h` to understand the base data types.
+3. Analyze `ptp_message.c` to learn message encoding.
+4. Run the master to watch messages being sent.
+5. Run the slave to understand the sync flow.
+6. Change parameters and experiment.
 
-## 扩展方向
+## Extension ideas
 
-可继续改进：
+Possible future improvements:
 
-- [ ] 添加硬件时间戳支持
-- [ ] 实现BMCA算法
-- [ ] 添加管理协议
-- [ ] 支持多端口
-- [ ] 添加安全扩展
+- [ ] add hardware timestamp support
+- [ ] implement the BMCA algorithm
+- [ ] add a management protocol
+- [ ] support multiple ports
+- [ ] add security extensions
 
-## 参考资料
+## References
 
-- [IEEE 1588-2019标准](https://standards.ieee.org/standard/1588-2019.html)
-- [LinuxPTP项目](http://linuxptp.sourceforge.net/)
-- [PTP协议精讲](配套教程)
+- [IEEE 1588-2019 standard](https://standards.ieee.org/standard/1588-2019.html)
+- [LinuxPTP project](http://linuxptp.sourceforge.net/)
 
-## 许可证
+## License
 
 MIT License
 
-## 作者
+## Author
 
-本代码为PTP教程配套示例，用于教学目的。
+This code accompanies the PTP tutorial and is provided for educational purposes.
 
-## 贡献
+## Contributing
 
-欢迎提交Issue和Pull Request！
+Issues and pull requests are welcome!
