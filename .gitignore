@@ -1,5 +1,23 @@
-# Compiled binaries
+# Compiled binaries and objects
 ptp_lite/ptp_master
 ptp_lite/ptp_slave
+ptp_lite/ptp_master_arm32
+ptp_lite/ptp_slave_arm32
 ptp_lite/ptp_master_arm64
 ptp_lite/ptp_slave_arm64
+*.o
+*.a
+*.so
+
+# Third-party reference material (not part of this book; do not commit)
+linuxptp/
+*.pdf
+
+# Editor / OS cruft
+*~
+\#*\#
+.\#*
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

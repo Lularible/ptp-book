@@ -29,7 +29,7 @@
 
 ## 快速开始
 
-在线阅读：直接浏览 `chapters/` 目录下的 Markdown 文件，按文件名顺序阅读。
+在线阅读：直接浏览 `chapters/` 目录下的 Markdown 文件，按节号顺序阅读。
 
 推荐 VS Code + Markdown Preview Enhanced 插件，或者 Typora、Obsidian。
 
@@ -49,7 +49,7 @@ sudo ./ptp_slave eth0[替换为实际网卡名]
 
 ## 许可证
 
-书籍内容：[CC BY-NC-ND 4.0](LICENSE) · ptp-lite 源码：MIT
+书籍内容：[CC BY-NC-ND 4.0](LICENSE) · ptp-lite 源码：[MIT](ptp_lite/LICENSE)
 
 ## 姊妹篇
 
