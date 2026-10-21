@@ -29,7 +29,7 @@ No prior knowledge of networking protocols is required. The four thought experim
 
 ## Quick Start
 
-Read online: browse the Markdown files under `en/chapters/`, in filename order.
+Read online: browse the Markdown files under `en/chapters/`, in section order (1.1 through 4.6).
 
 Recommended: VS Code with the Markdown Preview Enhanced extension, or Typora / Obsidian.
 
